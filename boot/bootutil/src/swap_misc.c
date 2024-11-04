@@ -133,6 +133,7 @@ swap_read_status(struct boot_loader_state *state, struct boot_status *bs)
     const struct flash_area *fap;
     uint32_t off;
     uint8_t swap_info;
+    uint32_t dw_val;
     int area_id;
     int rc;
 
@@ -164,13 +165,15 @@ swap_read_status(struct boot_loader_state *state, struct boot_status *bs)
     rc = swap_read_status_bytes(fap, state, bs);
     if (rc == 0) {
         off = boot_swap_info_off(fap);
-        rc = flash_area_read(fap, off, &swap_info, sizeof swap_info);
+//        rc = flash_area_read(fap, off, &swap_info, sizeof swap_info);
+        rc = flash_area_read(fap, off, &dw_val, sizeof dw_val);
         if (rc != 0) {
             rc = BOOT_EFLASH;
             goto done;
         }
-
-        if (bootutil_buffer_is_erased(fap, &swap_info, sizeof swap_info)) {
+        swap_info = (uint8_t)(dw_val & 0xff);
+//        if (bootutil_buffer_is_erased(fap, &swap_info, sizeof swap_info)) {
+        if (bootutil_buffer_is_erased(fap, &dw_val, sizeof dw_val)) {
             BOOT_SET_SWAP_INFO(swap_info, 0, BOOT_SWAP_TYPE_NONE);
             rc = 0;
         }

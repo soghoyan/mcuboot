@@ -147,6 +147,7 @@ swap_read_status_bytes(const struct flash_area *fap,
 {
     uint32_t off;
     uint8_t status;
+    uint32_t dw_val;
     int max_entries;
     int found_idx;
     uint8_t write_sz;
@@ -168,12 +169,15 @@ swap_read_status_bytes(const struct flash_area *fap,
     write_sz = BOOT_WRITE_SZ(state);
     off = boot_status_off(fap);
     for (i = max_entries; i > 0; i--) {
-        rc = flash_area_read(fap, off + (i - 1) * write_sz, &status, 1);
+//        rc = flash_area_read(fap, off + (i - 1) * write_sz, &status, 1);
+        rc = flash_area_read(fap, off + (i - 1) * write_sz, &dw_val, sizeof(dw_val));
         if (rc < 0) {
             return BOOT_EFLASH;
         }
 
-        if (bootutil_buffer_is_erased(fap, &status, 1)) {
+        status = (uint8_t)(dw_val & 0xff);
+//        if (bootutil_buffer_is_erased(fap, &status, 1)) {
+        if (bootutil_buffer_is_erased(fap, &dw_val, sizeof(dw_val))) {
             if (rc != last_rc) {
                 erased_sections++;
             }

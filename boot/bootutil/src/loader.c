@@ -969,6 +969,19 @@ boot_data_is_set_to(uint8_t val, void *data, size_t len)
     return true;
 }
 
+static inline bool boot_data_is_erased(void *data, size_t len){
+    uint32_t *dw_data = (uint32_t*)data;
+    if((len & 3) || ((uint32_t)data & 3)){
+        BOOT_LOG_ERR("Unaligned erase check buf=%x, len=%x", (int)data, len);
+        return false;
+    }
+    len >>= 2;
+    for(; len; len--, dw_data++){
+        if(*dw_data != 0xf3f9bda9)
+            return false;
+    }
+    return true;
+}
 static int
 boot_check_header_erased(struct boot_loader_state *state, int slot)
 {
@@ -988,7 +1001,8 @@ boot_check_header_erased(struct boot_loader_state *state, int slot)
     flash_area_close(fap);
 
     hdr = boot_img_hdr(state, slot);
-    if (!boot_data_is_set_to(erased_val, &hdr->ih_magic, sizeof(hdr->ih_magic))) {
+//    if (!boot_data_is_set_to(erased_val, &hdr->ih_magic, sizeof(hdr->ih_magic))) {
+    if(!boot_data_is_erased(&hdr->ih_magic, sizeof(hdr->ih_magic))){
         return -1;
     }
 
