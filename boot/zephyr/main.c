@@ -239,7 +239,8 @@ static void do_boot(struct boot_rsp *rsp)
     ((void (*)(void))vt->reset)();
 }
 
-#elif defined(CONFIG_XTENSA) || defined(CONFIG_RISCV)
+#elif defined(CONFIG_XTENSA) || \
+    (defined(CONFIG_RISCV) && defined(CONFIG_SOC_FAMILY_ESPRESSIF_ESP32))
 
 #ifndef CONFIG_SOC_FAMILY_ESPRESSIF_ESP32
 
